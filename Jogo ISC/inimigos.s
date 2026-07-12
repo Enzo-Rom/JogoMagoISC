@@ -1,7 +1,7 @@
 .data
 .include "vilao.data"
 
-.eqv OGRE_INTERVALO  6     # frames entre cada passo (velocidade lenta)
+.eqv OGRE_INTERVALO  5     # frames entre cada passo (velocidade lenta)
 .eqv OGRE_DIST_MIN   80    # distancia minima (manhattan) ao nascer
 .eqv OGRE_TENTATIVAS 10
 

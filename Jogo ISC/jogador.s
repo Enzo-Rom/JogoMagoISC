@@ -209,6 +209,9 @@ mago_atingido:
 
     blez t1, game_over
 
+    li a0, 1000
+    jal sleep_ms
+    
     jal reinicia_rodada
 
     lw ra, 0(sp)
