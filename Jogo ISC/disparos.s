@@ -7,7 +7,7 @@
 #########################################################################
 
 .data
-.include "disparo.data"
+.include "powershot1.data"
 
 .eqv MAX_DISPAROS    8      # maximo de disparos simultaneos na tela
 .eqv TAM_DISPARO     20     # bytes por disparo: x, y, ativo, vx, vy
