@@ -2,6 +2,7 @@
 
 .data
 .include "magomenu.data"
+.include "pausemenu.data"
 .include "tela.data"
 .include "mago.data"
 .include "colisao.s"
@@ -32,6 +33,20 @@ main:
     li t0, VGA_BASE
     sw zero, 0(t0)
     li s0, VGA_BASE
+
+init_mago:
+    la t0, vida_atual
+    li t1, 3
+    sw t1, 0(t0)
+    la t0, mana_atual
+    li t1, 65
+    sw t1, 0(t0)
+    la t0, posicao_x_mago
+    li t1, 24
+    sw t1, 0(t0)
+    la t0, posicao_y_mago
+    li t1, 20
+    sw t1, 0(t0)
 
     la t0, inimigos
     li t1, MAX_INIMIGOS
@@ -74,8 +89,8 @@ loop:
 
     jal read_key
 
-    li t0, 27
-    beq a0, t0, exit_program
+    li t0, 'p'
+    beq a0, t0, pause_menu
     li t0, 'w'
     beq a0, t0, move_up
     li t0, 'a'
@@ -85,6 +100,19 @@ loop:
     li t0, 'd'
     beq a0, t0, move_right
     j after_move
+
+pause_menu:
+    jal draw_pause
+
+    jal read_key
+
+    li t0, ' '
+    beq a0, t0, loop
+    li t0, 27
+    beq a0, t0, exit_program
+    li t0, 'r'
+    beq a0, t0, main
+    j pause_menu
 
 move_up:
     la t0, posicao_y_mago
@@ -222,6 +250,45 @@ menu_done:
     ret
 
 # Desenha o mago 24x24 na tela
+draw_pause:
+    la t0, base_frame_A
+    lw s0, 0(t0)
+
+    li s1, 50
+    li s2, 50
+
+    li s3, 210
+    li s4, 120
+    mv t0, s0
+    li t1, 320
+    mul t2, s2, t1
+    add t2, t2, s1
+    add t0, t0, t2
+
+    la t2, pausemenu
+    addi t2, t2, 8
+    li t3, 0
+    li t6, 320
+pause_row:
+    beq t3, s4, pause_done
+    mv t4, t0
+    li t5, 0
+pause_col:
+    beq t5, s3, pause_next_row
+    lb t1, 0(t2)
+    sb t1, 0(t4)
+    addi t2, t2, 1
+    addi t4, t4, 1
+    addi t5, t5, 1
+    j pause_col
+pause_next_row:
+    add t0, t0, t6
+    addi t3, t3, 1
+    j pause_row
+pause_done:
+    ret
+
+# Desenha o menu de pause na tela
 draw_square:
     la t0, base_frame_A
     lw s0, 0(t0)
