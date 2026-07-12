@@ -97,22 +97,22 @@ atualiza_loop:
     bgt t1, t3, ogre_esquerda
     j ogre_x_ok
 ogre_direita:
-    addi t1, t1, 3
+    addi t1, t1, 2
     li t5, 1
     sw t5, 12(s1)                # direcao = direita
     j ogre_x_ok
 ogre_esquerda:
-    addi t1, t1, -3
+    addi t1, t1, -2
     sw zero, 12(s1)              # direcao = esquerda
 ogre_x_ok:
     blt t2, t4, ogre_desce
     bgt t2, t4, ogre_sobe
     j ogre_y_ok
 ogre_desce:
-    addi t2, t2, 3
+    addi t2, t2, 2
     j ogre_y_ok
 ogre_sobe:
-    addi t2, t2, -3
+    addi t2, t2, -2
 ogre_y_ok:
     sw t1, 0(s1)
     sw t2, 4(s1)

@@ -25,7 +25,7 @@ tempo_final:     .word 0 # s3
 .eqv VGA_END       0xFF012C00
 .eqv VGA_FRAME_SEL 0xFF200604
 .eqv TECLA         0xff200004 # endereço do teclado
-.eqv FRAME_TARGET_MS 40
+.eqv FRAME_TARGET_MS 30
 
 .globl main
 main:
@@ -65,14 +65,12 @@ show_menu:
 
 #Pausa no inicio da fase
     li a0, 1000
-    li a7, 32
-    ecall
+    jal sleep_ms
 
 loop:
-    li a7, 30
-    ecall
+    csrr t1, time
     la t0, tempo_inicio
-    sw a0, 0(t0)
+    sw t1, 0(t0)
 
     jal read_key
 
@@ -162,21 +160,26 @@ draw_frame:
 
     la t0, tempo_inicio
     lw t1, 0(t0)
-    li a7, 30
-    ecall
-    mv t2, a0
+    csrr t2, time
     li t3, FRAME_TARGET_MS
     sub a0, t2, t1
     sub a0, t3, a0
     bltz a0, no_sleep
-    li a7, 32
-    ecall
+    jal sleep_ms
 no_sleep:
     j loop
 
 exit_program:
     li a7, 10
     ecall
+    
+sleep_ms:
+    csrr t0, time
+    add t1, t0, a0
+sleep_loop:
+    csrr t0, time
+    bltu t0, t1, sleep_loop
+    ret
 
 read_key:
     lw a0, TECLA  # endereço do teclado
