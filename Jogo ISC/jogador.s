@@ -211,7 +211,7 @@ mago_atingido:
 
     li a0, 1000
     jal sleep_ms
-    
+
     jal reinicia_rodada
 
     lw ra, 0(sp)
@@ -222,7 +222,30 @@ game_over:
     # AJUSTAR: chamar aqui a tela/rotina de game over
     lw ra, 0(sp)
     addi sp, sp, 4
-    ret
+    
+    li a0, 1000
+    jal sleep_ms
+
+draw_over:
+    la t0, base_frame_A
+    lw s0, 0(t0)
+    la t0, gameover
+    mv t1, s0
+    li t6, 76800
+    add t2, s0, t6
+over_loop:
+    beq t1, t2, over_done
+    lb t3, 8(t0)
+    sb t3, 0(t1)
+    addi t0, t0, 1
+    addi t1, t1, 1
+    j over_loop
+over_done:
+    jal read_key
+    li t0, ' '
+    bne a0, t0, over_done
+
+    j exit_program
 
 reinicia_rodada:
     addi sp, sp, -4

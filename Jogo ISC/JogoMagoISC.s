@@ -4,6 +4,7 @@
 .include "magomenu.data"
 .include "pausemenu.data"
 .include "tela.data"
+.include "gameover.data"
 .include "mago.data"
 .include "colisao.s"
 .include "jogador.s"
@@ -335,7 +336,7 @@ resume_game:
     li t0, TECLA           # consome a tecla usada no pause
     sw zero, 0(t0)
     j loop
-    
+
 exit_program:
     li a7, 10
     ecall
