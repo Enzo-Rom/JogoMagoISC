@@ -3,7 +3,7 @@
 # - Tecla ESPACO cria um disparo na direcao do ultimo movimento (WASD)  #
 # - Ate MAX_DISPAROS na tela ao mesmo tempo                             #
 # - Ao acertar um inimigo, o inimigo desaparece e o disparo some        #
-# - Textura em disparo.data (placeholder branco 10x10, trocavel depois) #
+# - Textura em powershot1.data (orbe 10x10; label "disparo:")               #
 #########################################################################
 
 .data
@@ -145,7 +145,9 @@ atualiza_disp_col:
     jal  check_collision
     beqz a0, atualiza_disp_col_next
 
-    # acertou: inimigo desaparece e o disparo some
+    # acertou: concede mana + tenta dropar powerup, depois some com ambos
+    mv   a0, s3                    # ponteiro do inimigo
+    jal  ao_matar_inimigo
     sw   zero, 8(s3)                # inimigo inativo
     sw   zero, 8(s1)                # disparo inativo
     j    atualiza_disp_next

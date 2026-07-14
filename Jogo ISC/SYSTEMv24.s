@@ -8,7 +8,7 @@
 # 2024/1								#
 #########################################################################
 
-# incluir o MACROSv24.s no inï¿½cio do seu programa!!!!
+# incluir o MACROSv24.s no início do seu programa!!!!
 
 .data
 .align 2
@@ -80,7 +80,7 @@ NumInfP:		.string "+Infinity"
 NumInfN:		.string "-Infinity"
 NumNaN:			.string "NaN"
 
-# tabela de causa de exceï¿½ï¿½es 
+# tabela de causa de exceções 
 Cause0: 		.string "Error: 0 Instruction address misaligned "
 Cause1: 		.string "Error: 1 Instruction access fault "
 Cause2: 		.string "Error: 2 Ilegal Instruction "
@@ -101,9 +101,9 @@ Instr:  		.string "Instr: "
 .text
 
 
-###### Devem ser colocadas aqui as identificaï¿½ï¿½es das interrupï¿½ï¿½es e exceï¿½ï¿½es #######
+###### Devem ser colocadas aqui as identificações das interrupções e exceções #######
 
-	csrwi ucause,1		# caso ocorra dropdown vai gerar exceï¿½ï¿½o de instruï¿½ï¿½o invï¿½lida
+	csrwi ucause,1		# caso ocorra dropdown vai gerar exceção de instrução inválida
 
 ExceptionHandling:	addi 	sp, sp, -8 	# salva 2 registradores utilizados para comparar ucause
 	sw 	t0, 0(sp)
@@ -112,18 +112,18 @@ ExceptionHandling:	addi 	sp, sp, -8 	# salva 2 registradores utilizados para com
 	csrr	s10,ucause     # le o ucause e salva em s10
 	
 	li 	t0, 8
-	bne 	t0, s10, errorExceptions  	# Nï¿½o ï¿½ ecall - nem precisa arrumar a pilha!
+	bne 	t0, s10, errorExceptions  	# Não é ecall - nem precisa arrumar a pilha!
 
-	lw 	t0, 0(sp)			# ï¿½ ecall
+	lw 	t0, 0(sp)			# É ecall
     	lw 	s10, 4(sp)  			# recupera registradores usados
     	addi 	sp, sp, 8			
 	j 	ecallException
 	
 ######################################################
-###############   Exceï¿½ï¿½es de Erros   ################
+###############   Exceções de Erros   ################
 ######################################################
 
-errorExceptions: csrr 	s11, utval      # le o utval da exceï¿½ï¿½o e salva em s11	
+errorExceptions: csrr 	s11, utval      # le o utval da exceção e salva em s11	
 	addi 	a0, zero, 0xc0 		## printa tela de azul
 	addi 	a1, zero, 0
 	addi 	a7, zero, 148
@@ -231,7 +231,7 @@ End_utval:	li 	a1, 0
 		jal 	printHex
 	
 
-End_uepc: 	la 	a0, PC 		# Imprime o pc em que a exceï¿½ï¿½o ocorreu
+End_uepc: 	la 	a0, PC 		# Imprime o pc em que a exceção ocorreu
 		li 	a1, 0
 		li 	a2, 12
 		li 	a3, 0x000c0ff
@@ -243,12 +243,12 @@ End_uepc: 	la 	a0, PC 		# Imprime o pc em que a exceï¿½ï¿½o ocorreu
 		li 	a3, 0x0000c0ff
 		jal 	printHex	
 		
-		j goToExit 		# encerra execuï¿½ï¿½o
+		j goToExit 		# encerra execução
 
 
 
 ######################################################
-#############   exceï¿½ï¿½o de ECALL   ###################
+#############   exceção de ECALL   ###################
 ######################################################
 ecallException:   addi    sp, sp, -264              # Salva todos os registradores na pilha
     sw     x1,    0(sp)
@@ -409,7 +409,7 @@ ecallException:   addi    sp, sp, -264              # Salva todos os registrador
     addi    t0, zero, 134		# ecall 34 = print hex
     beq     t0, a7, goToPrintHex
    
-#    Print Bin nï¿½o implementado ainda
+#    Print Bin não implementado ainda
 #    addi    t0, zero, 35       	# ecall 35 = print bin
 #    beq     t0, a7, goToPrintBin
 #    addi    t0, zero, 134		# ecall 35 = print bin
@@ -451,7 +451,7 @@ ecallException:   addi    sp, sp, -264              # Salva todos os registrador
 	goToExit:   	DE1(s8,goToExitDE2)		# se for a DE1 pula
 			li 	a7, 10			# chama o ecall normal do Rars
 			ecall				# exit ecall	
-	goToExitDE2:	j 	goToExitDE2		# trava o processador : Nï¿½o tem sistema operacional!
+	goToExitDE2:	j 	goToExitDE2		# trava o processador : Não tem sistema operacional!
 
 	goToPrintInt:	jal     printInt               	# chama printInt
 			j       endEcall
@@ -929,7 +929,7 @@ loopreadString: beq 	a1, a3, fimreadString   	# buffer cheio fim
 
 		li 	tp, 0x08			
 		bne	t6, tp, PulaBackSpace		# Se nao for BACKSPACE
-		beq	zero, a3, loopreadString	# Se nï¿½o tem nenhum caractere no buffer apenas volta a ler
+		beq	zero, a3, loopreadString	# Se não tem nenhum caractere no buffer apenas volta a ler
 		addi	a3, a3, -1			# diminui contador
 		addi 	a0, a0, -1			# diminui endereco do buffer
 		sb 	zero, 0(a0)			# coloca zero no caractere anterior
@@ -1539,32 +1539,39 @@ fimreadFloat: 	lw 	ra, 0(sp)		# recupera ra
 
 
 ############################################
-#  Time                             	   #
-#  a0    =    TimeLOW                  	   #
+#  Time                            	   #
+#  a0    =    TimeLOW                 	   #
 #  a1    =    TimeHIGH	                   #
 ############################################
-Time:
-	csrr a0, time			# Le time LOW
-	csrr a1, timeh			# Le time HIGH
-	ret
+Time:  	DE1(s8,Time.DE1)
+	li 	a7, 30				# Chama o ecall do Rars
+	ecall
+	ret					# saida
+	
+Time.DE1:	csrr a0, time			#  Le time LOW
+		csrr a1, timeh 			#  Le time HIGH
+		ret
 
 
 ############################################
-#  Sleep                             	   #
-#  a0    =    Tempo em ms              	   #
+#  Sleep                            	   #
+#  a0    =    Tempo em ms             	   #
 ############################################
-Sleep:
-	csrr	t0, time		# Le o tempo do sistema
-	add	t1, t0, a0		# soma com o tempo solicitado
-Sleep.Loop:
-	csrr	t0, time		# Le o tempo do sistema
-	bltu	t0, t1, Sleep.Loop	# t0<t1 ?
-	ret
+Sleep:  DE1(s8,Sleep.DE1)
+	li 	a7, 32				# Chama o ecall do Rars
+	ecall
+	ret					#Saida
+
+Sleep.DE1:	csrr 	t0, time		# Le o tempo do sistema
+		add 	t1, t0, a0		# soma com o tempo solicitado
+Sleep.Loop:	csrr	t0, time		# Le o tempo do sistema
+		bltu	t0, t1, Sleep.Loop	# t0<t1 ?
+		ret
 
 
 ############################################
 #  Random         41                       #
-#  a0    =    numero randomico         	   #
+#  a0    =    numero randomico        	   #
 ############################################
 
 Random:	 DE1(s8,Random.DE1)
@@ -1580,7 +1587,7 @@ Random.DE1: 	li 	t0, LFSR	# carrega endereco do LFSR
 ############################################
 #  Random 42                           	   #
 #  			                   #
-#  a1    =    Valor mï¿½ximo                 #
+#  a1    =    Valor máximo                 #
 #  output a0 = numero randomico        	   #
 ############################################
 
@@ -1723,7 +1730,7 @@ PULA4BRES: 	slli 	t6, t0, 1		# 2*dy
 		ret		
 
 
-# Sugestao para nomes de loops: Sempre comecar com o nome da sub-rotina, entï¿½o adicionar um '.', seguido do nome do loop . Garante que o nome do loop serï¿½ ï¿½nico, se as sub-rotinas
+# Sugestao para nomes de loops: Sempre comecar com o nome da sub-rotina, então adicionar um '.', seguido do nome do loop . Garante que o nome do loop será único, se as sub-rotinas
 # tiverem nomes diferentes.
 
 #############################################
@@ -1774,11 +1781,11 @@ printIntUnsigned.fim:	ret
 
 
 ###########################################################################
-# lib de operaï¿½ï¿½es multiplicaï¿½ï¿½o, divisï¿½o e resto para a ISA RV32I
+# lib de operações multiplicação, divisão e resto para a ISA RV32I
 # Nomenclatura usada pelo gcc
 ###########################################################################
 
-# Multiplicaï¿½ï¿½o signed em a0 e a1  retorno em a0
+# Multiplicação signed em a0 e a1  retorno em a0
 # https://github.com/gcc-mirror/gcc/tree/master/libgcc/config/epiphany
 __mulsi3:	addi 	sp,sp,-12
 		sw 	a1,0(sp)
@@ -1801,7 +1808,7 @@ mulsi3.L1: 	lw 	a1,0(sp)
 		addi 	sp,sp,12
 		ret
         
-# Divisï¿½o unsigned em a0 e a1 retorno em a0
+# Divisão unsigned em a0 e a1 retorno em a0
 # https://stackoverflow.com/questions/34457575/integer-division-algorithm-analysis
 __udivsi3:	addi 	sp,sp,-16
 		sw 	a1,0(sp)
@@ -1849,20 +1856,20 @@ __umodsi3:	addi	sp, sp, -12
 		addi 	sp, sp, 12
 		ret
 		
-# Divisï¿½o signed em a0 e a1	
+# Divisão signed em a0 e a1	
 __divsi3:	addi	sp, sp, -16
 		sw 	t0, 0(sp)
 		sw 	t1, 4(sp)
 		sw 	t2, 8(sp)
 		sw 	ra, 12(sp)
-		srai	t0,a0,31	# indica se a0 ï¿½ pos(0) ou neg (2^32-1)
-		srai 	t1,a1,31	# indica se a1 ï¿½ pos(0) ou neg (2^32-1)
-		xor	t2,t0,t1	# indica se deve(!=0) ou nï¿½o(==0) inverter o sinal do resultado
+		srai	t0,a0,31	# indica se a0 é pos(0) ou neg (2^32-1)
+		srai 	t1,a1,31	# indica se a1 é pos(0) ou neg (2^32-1)
+		xor	t2,t0,t1	# indica se deve(!=0) ou não(==0) inverter o sinal do resultado
 		beqz 	t0,divsi3.pula1
 		neg	a0,a0		# nega
 divsi3.pula1:	beqz 	t1,divsi3.pula2
 		neg	a1,a1		# nega
-divsi3.pula2:	jal 	__udivsi3	# divisï¿½o unsigned
+divsi3.pula2:	jal 	__udivsi3	# divisão unsigned
 		beqz	t2, divsi3.pula3	
 		neg	a0,a0		# nega
 divsi3.pula3:	lw 	t0, 0(sp)
@@ -1877,8 +1884,8 @@ __modsi3:	addi	sp, sp, -12
 		sw 	t0, 0(sp)
 		sw 	t1, 4(sp)
 		sw 	ra, 8(sp)
-		srai	t0,a0,31	# indica se a0 ï¿½ pos(0) ou neg (2^32-1)
-		srai 	t1,a1,31	# indica se a1 ï¿½ pos(0) ou neg (2^32-1)
+		srai	t0,a0,31	# indica se a0 é pos(0) ou neg (2^32-1)
+		srai 	t1,a1,31	# indica se a1 é pos(0) ou neg (2^32-1)
 		beqz 	t0,modsi3.pula1
 		neg	a0,a0		# nega
 modsi3.pula1:	beqz 	t1,modsi3.pula2

@@ -44,7 +44,7 @@ isaRV32X:    .string "ISA: ISA Desconhecida"
 		csrr	t0,instret
 		sub	s0,t0,s0	# I
 		sub	s1,t1,s1	# ciclos
-		addi	s1,s1,2		# 2 corrige as 2 instruï¿½ï¿½es a mais
+		addi	s1,s1,2		# 2 corrige as 2 instruções a mais
 		sub	s2,t2,s2	# texec (ms)
 		NAOTEM_F(s8,PULA0)	# ver MACROS.s
 		fcvt.s.w ft0,s0		# I
@@ -466,9 +466,3 @@ SAI2:	addi t0,t0,1
 
 
 .include "../SYSTEMv24.s"
-
-
-
-
-
-

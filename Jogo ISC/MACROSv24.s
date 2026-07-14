@@ -218,5 +218,3 @@ div10.pula2:	csrw	%rd,uscratch
 
 .eqv FDIVIDER		0xFF200710
 
-																																															
-

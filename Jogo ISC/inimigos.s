@@ -1,13 +1,20 @@
 .data
 .include "vilao.data"
 
-.eqv OGRE_INTERVALO  5     # frames entre cada passo (velocidade lenta)
-.eqv OGRE_DIST_MIN   80    # distancia minima (manhattan) ao nascer
-.eqv OGRE_TENTATIVAS 10
+.eqv OGRE_INTERVALO      5     # frames entre cada passo (velocidade lenta)
+.eqv OGRE_DIST_MIN       80    # distancia minima (manhattan) ao nascer
+.eqv OGRE_TENTATIVAS     10
+.eqv META_INIMIGOS_FASE  10    # goblins a matar para passar de fase
+.eqv INIMIGOS_INICIAIS   2     # quantos inimigos nascem logo de cara na fase
+.eqv OGRE_SPAWN_INTERVALO 60   # frames entre o nascimento gradual de cada novo inimigo
+
+inimigos_mortos: .word 0   # contador de abates na fase atual
+spawn_timer:     .word 0   # contagem regressiva pro proximo nascimento gradual
 
 .text
 
-# Sorteia uma posição longe do mago e ativa o primeiro slot de inimigo
+# Ativa só um punhado de inimigos no começo da fase (INIMIGOS_INICIAIS) e
+# arma o timer que vai liberar os demais aos poucos (ver atualiza_spawn_inimigos)
 spawn_inimigos:
     addi sp, sp, -12
     sw ra, 8(sp)
@@ -15,9 +22,87 @@ spawn_inimigos:
     sw s2, 0(sp)
 
     la s1, inimigos
+    li s2, INIMIGOS_INICIAIS
+
+spawn_inimigos_loop:
+    beqz s2, spawn_inimigos_fim
+
+    mv a0, s1
+    jal spawn_um_inimigo
+
+    add s1, s1, t2             # avanca TAM_INIMIGO (devolvido em t2 por spawn_um_inimigo)
+    addi s2, s2, -1
+    j spawn_inimigos_loop
+
+spawn_inimigos_fim:
+    li t0, OGRE_SPAWN_INTERVALO
+    la t1, spawn_timer
+    sw t0, 0(t1)
+
+    lw ra, 8(sp)
+    lw s1, 4(sp)
+    lw s2, 0(sp)
+    addi sp, sp, 12
+    ret
+
+# Chamar uma vez por frame no loop principal.
+# A cada OGRE_SPAWN_INTERVALO frames, procura um slot vazio e nasce
+# UM novo inimigo ali, ate preencher todos os slots aos poucos.
+atualiza_spawn_inimigos:
+    addi sp, sp, -12
+    sw ra, 8(sp)
+    sw s1, 4(sp)
+    sw s2, 0(sp)
+
+    la t0, spawn_timer
+    lw t1, 0(t0)
+    addi t1, t1, -1
+    bgtz t1, spawn_grad_guarda   # ainda nao chegou a hora de nascer mais um
+
+    li t1, OGRE_SPAWN_INTERVALO  # reseta o timer pra proxima leva
+
+    la s1, inimigos
+    li s2, MAX_INIMIGOS
+spawn_grad_busca:
+    beqz s2, spawn_grad_fim
+
+    lw t3, 8(s1)
+    bnez t3, spawn_grad_next     # slot ja ocupado, pula pro proximo
+
+    mv a0, s1
+    jal spawn_um_inimigo         # nasce um novo inimigo nesse slot vazio
+    j spawn_grad_fim             # só um por vez, o resto fica pro proximo timer
+
+spawn_grad_next:
+    addi s1, s1, TAM_INIMIGO
+    addi s2, s2, -1
+    j spawn_grad_busca
+
+spawn_grad_fim:
+spawn_grad_guarda:
+    la t0, spawn_timer
+    sw t1, 0(t0)
+
+    lw ra, 8(sp)
+    lw s1, 4(sp)
+    lw s2, 0(sp)
+    addi sp, sp, 12
+    ret
+
+# Sorteia uma posição longe do mago e ativa UM slot especifico de inimigo
+# a0 = ponteiro para o registro do inimigo (dentro de "inimigos")
+# devolve em t2 o TAM_INIMIGO (util pro loop de spawn_inimigos)
+spawn_um_inimigo:
+    addi sp, sp, -16
+    sw ra, 12(sp)
+    sw s1, 8(sp)
+    sw s2, 4(sp)
+    sw s3, 0(sp)
+
+    mv s1, a0                  # s1 = ponteiro do slot a preencher
     li s2, OGRE_TENTATIVAS
 
-spawn_tenta:
+spawn_um_tenta:
     li a7, 42
     li a1, 264
     ecall
@@ -34,23 +119,23 @@ spawn_tenta:
     lw t3, 0(t3)
 
     sub t4, t0, t2
-    bgez t4, spawn_dx_ok
+    bgez t4, spawn_um_dx_ok
     neg t4, t4
-spawn_dx_ok:
+spawn_um_dx_ok:
     sub t5, t1, t3
-    bgez t5, spawn_dy_ok
+    bgez t5, spawn_um_dy_ok
     neg t5, t5
-spawn_dy_ok:
+spawn_um_dy_ok:
     add t4, t4, t5            # distancia até o mago
 
     li t6, OGRE_DIST_MIN
-    bge t4, t6, spawn_aceita
+    bge t4, t6, spawn_um_aceita
 
     addi s2, s2, -1
-    bnez s2, spawn_tenta
+    bnez s2, spawn_um_tenta
     # acabaram as tentativas: usa a última posição sorteada mesmo
 
-spawn_aceita:
+spawn_um_aceita:
     sw t0, 0(s1)
     sw t1, 4(s1)
     li t0, 1
@@ -59,10 +144,13 @@ spawn_aceita:
     li t0, OGRE_INTERVALO
     sw t0, 16(s1)              # timer de passo
 
-    lw ra, 8(sp)
-    lw s1, 4(sp)
-    lw s2, 0(sp)
-    addi sp, sp, 12
+    li t2, TAM_INIMIGO         # devolve o tamanho do registro pro chamador (spawn_inimigos)
+
+    lw ra, 12(sp)
+    lw s1, 8(sp)
+    lw s2, 4(sp)
+    lw s3, 0(sp)
+    addi sp, sp, 16
     ret
 
 # Anda os inimigos ativos 1px por vez em direção ao mago (chase simples)
@@ -206,6 +294,22 @@ vilao_row_done:
 
 # Mata um inimigo (a0 = ponteiro pro registro dele em "inimigos")
 # Chamar aqui quando o poder do mago acertar um ogro
+# Conta o abate: a cada META_INIMIGOS_FASE mortes, avança de fase.
+# O slot fica vazio e é repovoado aos poucos por atualiza_spawn_inimigos.
 mata_inimigo:
-    sw zero, 8(a0)
+    sw zero, 8(a0)             # desativa o inimigo
+
+    la t0, inimigos_mortos
+    lw t1, 0(t0)
+    addi t1, t1, 1
+    sw t1, 0(t0)
+
+    li t3, META_INIMIGOS_FASE
+    blt t1, t3, mata_fim
+
+    # atingiu a meta de abates: zera o contador e passa de fase
+    sw zero, 0(t0)
+    j next_level
+
+mata_fim:
     ret
