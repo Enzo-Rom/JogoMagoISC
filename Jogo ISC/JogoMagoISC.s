@@ -9,6 +9,7 @@
 .include "magomenu.data"
 .include "pausemenu.data"
 .include "tela.data"
+.include "vitoria.data"
 .include "gameover.data"
 .include "mago.data"
 .include "colisao.s"
@@ -188,6 +189,15 @@ pause_menu:
     j pause_menu
 
 next_level:
+    la t0, inimigos_mortos
+    sw zero, 0(t0)
+
+    jal draw_image
+    jal frameM3
+
+    li a0, 3000
+    jal sleep_ms
+
     la t0, map_adress
     lw t1, 0(t0)
     li t2, 76800
@@ -198,6 +208,9 @@ next_level:
     lw t1, 0(t0)
     addi t1, t1, 1
     sw t1, 0(t0)
+
+    li t0, 3
+    beq t0, t1, venceu
 
     j init_mago
 
@@ -265,94 +278,14 @@ after_move:
     jal atualiza_disparos
     jal atualiza_superdisparos
     jal atualiza_powerups
-    
-map_colision1:
-    la t0, nivel_atual
+    jal map_colision1
+fim_after_move:
+
+    # atingiu a meta de abates: zera o contador e passa de fase
+    la t0, inimigos_mortos
     lw t1, 0(t0)
-    li t0, 1
-    bne t1, t0, map_colision2
-
-    # Carrega dados do mago
-    la t0, posicao_x_mago
-    lw a0, 0(t0)
-    la t0, posicao_y_mago
-    lw a1, 0(t0)
-    la t0, tamanho_mago
-    lw a2, 0(t0)
-    mv a3, a2
-
-    # Carrega dados do poco 1
-    li a4, 78
-    li a5, 68
-    li a6, 24
-    li a7, 18
-
-    jal check_collision
-    li t0, 1
-    beq a0, t0, colidiu
-
-    # Carrega dados do poco 2
-    la t0, posicao_x_mago
-    lw a0, 0(t0)
-    li a4, 208
-    li a5, 73
-    
-    jal check_collision
-    li t0, 1
-    beq a0, t0, colidiu
-
-    # Carrega dados do poco 3
-    la t0, posicao_x_mago
-    lw a0, 0(t0)
-    li a4, 208
-    li a5, 140
-    
-    jal check_collision
-    li t0, 1
-    beq a0, t0, colidiu
-
-    # Carrega dados do poco 4
-    la t0, posicao_x_mago
-    lw a0, 0(t0)
-    li a4, 78
-    li a5, 140
-    
-    jal check_collision
-    li t0, 1
-    beq a0, t0, colidiu
-
-    j fim_colision
-
-map_colision2:
-    li t0, 2
-    bne t1, t0, fim_colision
-
-    # Carrega dados do mago
-    la t0, posicao_x_mago
-    lw a0, 0(t0)
-    la t0, posicao_y_mago
-    lw a1, 0(t0)
-    la t0, tamanho_mago
-    lw a2, 0(t0)
-    mv a3, a2
-
-    # Carrega dados do poco 1
-    li a4, 1
-    li a5, 100
-    li a6, 320
-    li a7, 20
-
-    jal check_collision
-    li t0, 1
-    beq a0, t0, colidiu
-
-    j fim_colision
-
-colidiu:
-    jal mago_atingido
-    j fim_colision
-
-fim_colision:
+    li t3, META_INIMIGOS_FASE
+    bge t1, t3, next_level
 
     li a0, 0
     li t0, TECLA
@@ -584,6 +517,7 @@ frameM2:
     add t2, t2, t0
     j draw_square1
 frameM3:
+    la t2, mago
     li t0, 1736     # 24*24*3 + 8 = 584
     add t2, t2, t0
     j draw_square1
@@ -647,3 +581,21 @@ go_draw_loop:
     j go_draw_loop
 go_draw_done:
     ret
+
+venceu:
+    la t0, base_frame_A
+    lw s0, 0(t0)
+    la t0, vitoria
+    mv t1, s0
+    li t6, 76800
+    add t2, s0, t6
+venceu_loop:
+    beq t1, t2, venceu_done
+    lb t3, 8(t0)
+    sb t3, 0(t1)
+    addi t0, t0, 1
+    addi t1, t1, 1
+    j venceu_loop
+venceu_done:
+jal tocar_musica_menu
+j exit_program

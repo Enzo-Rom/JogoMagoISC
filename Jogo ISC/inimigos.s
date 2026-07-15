@@ -1,12 +1,12 @@
 .data
 .include "vilao.data"
 
-.eqv OGRE_INTERVALO      5     # frames entre cada passo (velocidade lenta)
-.eqv OGRE_DIST_MIN       80    # distancia minima (manhattan) ao nascer
+.eqv OGRE_INTERVALO      4     # frames entre cada passo (velocidade lenta)
+.eqv OGRE_DIST_MIN       120    # distancia minima (manhattan) ao nascer
 .eqv OGRE_TENTATIVAS     10
-.eqv META_INIMIGOS_FASE  10    # goblins a matar para passar de fase
+.eqv META_INIMIGOS_FASE  20    # goblins a matar para passar de fase
 .eqv INIMIGOS_INICIAIS   2     # quantos inimigos nascem logo de cara na fase
-.eqv OGRE_SPAWN_INTERVALO 60   # frames entre o nascimento gradual de cada novo inimigo
+.eqv OGRE_SPAWN_INTERVALO 3   # frames entre o nascimento gradual de cada novo inimigo
 
 inimigos_mortos: .word 0   # contador de abates na fase atual
 spawn_timer:     .word 0   # contagem regressiva pro proximo nascimento gradual
@@ -297,19 +297,13 @@ vilao_row_done:
 # Conta o abate: a cada META_INIMIGOS_FASE mortes, avança de fase.
 # O slot fica vazio e é repovoado aos poucos por atualiza_spawn_inimigos.
 mata_inimigo:
+    sw zero, 0(a0)             # desativa o inimigo
+    sw zero, 4(a0)             # desativa o inimigo
     sw zero, 8(a0)             # desativa o inimigo
-
     la t0, inimigos_mortos
     lw t1, 0(t0)
     addi t1, t1, 1
     sw t1, 0(t0)
-
-    li t3, META_INIMIGOS_FASE
-    blt t1, t3, mata_fim
-
-    # atingiu a meta de abates: zera o contador e passa de fase
-    sw zero, 0(t0)
-    j next_level
 
 mata_fim:
     ret

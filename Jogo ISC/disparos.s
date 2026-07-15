@@ -148,7 +148,8 @@ atualiza_disp_col:
     # acertou: concede mana + tenta dropar powerup, depois some com ambos
     mv   a0, s3                    # ponteiro do inimigo
     jal  ao_matar_inimigo
-    sw   zero, 8(s3)                # inimigo inativo
+    mv   a0, s3                    # ponteiro do inimigo
+    jal  mata_inimigo
     sw   zero, 8(s1)                # disparo inativo
     j    atualiza_disp_next
 

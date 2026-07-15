@@ -106,6 +106,10 @@ tocar_som_goblin_morre:
     li a7, 33
     ecall
 
+    li a0, 1000
+    li a7, 32
+    ecall
+
     li a0, 69
     li a1, 130
     li a2, INSTRUMENTO_GOBLIN

@@ -88,3 +88,176 @@ colisao_fim:
     lw s7, 0(sp)
     addi sp, sp, 32
     ret
+
+map_colision1:
+    la t0, nivel_atual
+    lw t1, 0(t0)
+    li t0, 1
+    bne t1, t0, map_colision2
+
+    # Carrega dados do mago
+    la t0, posicao_x_mago
+    lw a0, 0(t0)
+    la t0, posicao_y_mago
+    lw a1, 0(t0)
+    la t0, tamanho_mago
+    lw a2, 0(t0)
+    mv a3, a2
+
+    # Carrega dados do poco 1
+    li a4, 78
+    li a5, 68
+    li a6, 24
+    li a7, 18
+
+    jal check_collision
+    li t0, 1
+    beq a0, t0, colidiu
+
+    # Carrega dados do poco 2
+    la t0, posicao_x_mago
+    lw a0, 0(t0)
+    li a4, 208
+    li a5, 73
+    
+    jal check_collision
+    li t0, 1
+    beq a0, t0, colidiu
+
+    # Carrega dados do poco 3
+    la t0, posicao_x_mago
+    lw a0, 0(t0)
+    li a4, 208
+    li a5, 140
+    
+    jal check_collision
+    li t0, 1
+    beq a0, t0, colidiu
+
+    # Carrega dados do poco 4
+    la t0, posicao_x_mago
+    lw a0, 0(t0)
+    li a4, 78
+    li a5, 140
+    
+    jal check_collision
+    li t0, 1
+    beq a0, t0, colidiu
+
+    j map_colision_inimigo1
+
+map_colision2:
+    li t0, 2
+    bne t1, t0, fim_colision
+
+    # Carrega dados do mago
+    la t0, posicao_x_mago
+    lw a0, 0(t0)
+    la t0, posicao_y_mago
+    lw a1, 0(t0)
+    la t0, tamanho_mago
+    lw a2, 0(t0)
+    mv a3, a2
+
+    # Carrega dados do poco 1
+    li a4, 1
+    li a5, 100
+    li a6, 320
+    li a7, 20
+
+    jal check_collision
+    li t0, 1
+    beq a0, t0, colidiu
+
+    j map_colision_inimigo1
+
+colidiu:
+    jal mago_atingido
+
+map_colision_inimigo1:
+    la   s3, inimigos
+    li   s4, MAX_INIMIGOS
+    
+    la t0, nivel_atual
+    lw t1, 0(t0)
+    li t0, 1
+    bne t1, t0, map_colision_inimigo2
+
+    # Carrega dados do inimigo
+    lw a0, 0(s3)
+    lw a1, 4(s3)
+    li a2, TAM_PX_INIMIGO
+    li a3, TAM_PX_INIMIGO
+
+    # Carrega dados do poco 1
+    li a4, 78
+    li a5, 68
+    li a6, 24
+    li a7, 18
+
+    jal check_collision
+    li t0, 1
+    beq a0, t0, colidiuI
+
+    # Carrega dados do poco 2
+    lw a0, 0(s3)
+    li a4, 208
+    li a5, 73
+    
+    jal check_collision
+    li t0, 1
+    beq a0, t0, colidiuI
+
+    # Carrega dados do poco 3
+    lw a0, 0(s3)
+    li a4, 208
+    li a5, 140
+    
+    jal check_collision
+    li t0, 1
+    beq a0, t0, colidiuI
+
+    # Carrega dados do poco 4
+    lw a0, 0(s3)
+    li a4, 78
+    li a5, 140
+    
+    jal check_collision
+    li t0, 1
+    beq a0, t0, colidiuI
+
+    j fim_colision
+
+map_colision_inimigo2:
+    li t0, 2
+    bne t1, t0, fim_colision
+
+    # Carrega dados do inimigo
+    # Carrega dados do inimigo
+    lw a0, 0(s3)
+    lw a1, 4(s3)
+    li a2, TAM_PX_INIMIGO
+    li a3, TAM_PX_INIMIGO
+
+    # Carrega dados do poco 1
+    li a4, 1
+    li a5, 100
+    li a6, 320
+    li a7, 20
+
+    jal check_collision
+    li t0, 1
+    beq a0, t0, colidiuI
+
+    j fim_colision
+
+colidiuI:
+    mv a0, s3
+    jal mata_inimigo
+
+fim_colision:
+    addi s3, s3, TAM_INIMIGO
+    addi s4, s4, -1
+    beqz s4, map_colision_inimigo1
+    
+j fim_after_move
