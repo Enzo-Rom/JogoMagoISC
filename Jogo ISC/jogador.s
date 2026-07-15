@@ -1,5 +1,5 @@
 .data
-# Sprites dos corações (8x8, 1 byte/pixel RGB332, 0x00 = transparente)
+# Sprites dos coraï¿½ï¿½es (8x8, 1 byte/pixel RGB332, 0x00 = transparente)
 coracao_cheio:
     .word 8, 8, 0
     .byte 0x00,0x07,0x07,0x00,0x00,0x07,0x07,0x00
@@ -29,7 +29,7 @@ hud_vida_y:       .word 4
 hud_vida_espaco:  .word 9
 
 mana_maxima:      .word 100
-mana_atual:       .word 65        # valor de exemplo só pra visualização
+mana_atual:       .word 65        # valor de exemplo sï¿½ pra visualizaï¿½ï¿½o
 hud_mana_x:       .word 4
 hud_mana_y:       .word 14
 hud_mana_largura: .word 26
@@ -43,7 +43,7 @@ mago_spawn_y:     .word 20
 .eqv MANA_COR        0xC0   # azul cheio (formato BBGGGRRR)
 .eqv MANA_COR_VAZIA  0x49   # trilho de fundo (azul escuro)
 
-# Função da vida do player: desenha os corações do HUD
+# Funï¿½ï¿½o da vida do player: desenha os coraï¿½ï¿½es do HUD
 draw_hearts:
     addi sp, sp, -16
     sw ra, 12(sp)
@@ -90,7 +90,7 @@ hearts_done:
     ret
 
 # Desenha um sprite 8x8, 1 byte/pixel, 0x00 = transparente
-# a0 = sprite (com cabeçalho), a1 = x, a2 = y
+# a0 = sprite (com cabeï¿½alho), a1 = x, a2 = y
 draw_sprite8x8:
     la t0, base_frame_A
     lw s0, 0(t0)
@@ -125,7 +125,7 @@ sprite_col_done:
 sprite_row_done:
     ret
 
-# Função da mana do player: desenha a barra de mana (preenche proporcional)
+# Funï¿½ï¿½o da mana do player: desenha a barra de mana (preenche proporcional)
 draw_mana_bar:
     addi sp, sp, -12
     sw s1, 8(sp)
@@ -183,7 +183,7 @@ mana_row_done:
     addi sp, sp, 12
     ret
 
-# Adiciona mana (a0 = quantidade), sem passar do máximo
+# Adiciona mana (a0 = quantidade), sem passar do mï¿½ximo
 ganha_mana:
     la t0, mana_atual
     lw t1, 0(t0)
@@ -197,26 +197,38 @@ mana_no_teto:
     sw t3, 0(t0)
     ret
 
-# Função de dano do player: aplica hit, mata inimigos da tela e reinicia
+# Funï¿½ï¿½o de dano do player: aplica hit, mata inimigos da tela e reinicia
 mago_atingido:
     addi sp, sp, -4
     sw ra, 0(sp)
-
-    la t0, escudo_timer        # escudo ativo? ignora o dano
+    la t0, escudo_timer
     lw t0, 0(t0)
     bgtz t0, mago_sem_dano
+    la t0, vida_atual
+    lw t1, 0(t0)
+    addi t1, t1, -1          # todo contato tira um coracao inteiro
+    sw t1, 0(t0)
+    blez t1, game_over
+    jal tocar_ataque_async
+    jal reinicia_rodada
+    lw ra, 0(sp)
+    addi sp, sp, 4
+    ret
 
-    jal tocar_ataque_async     # som do ogro acertando o mago (assincrono)
-
+mago_atingido_olho:
+    addi sp, sp, -4
+    sw ra, 0(sp)
+    la t0, escudo_timer
+    lw t0, 0(t0)
+    bgtz t0, mago_olho_sem_dano
+    jal tocar_som_olho_ataca_async
     la t0, vida_atual
     lw t1, 0(t0)
     addi t1, t1, -1
     sw t1, 0(t0)
-
     blez t1, game_over
-
     jal reinicia_rodada
-
+mago_olho_sem_dano:
     lw ra, 0(sp)
     addi sp, sp, 4
     ret
@@ -227,6 +239,7 @@ mago_sem_dano:
     ret
 
 game_over:
+    jal tocar_som_mago_morre   # morte: efeito proprio, grave e mais longo
     la t0, game_over_flag       # sinaliza game over; a tela e mostrada no loop
     li t1, 1
     sw t1, 0(t0)
@@ -237,6 +250,9 @@ game_over:
 reinicia_rodada:
     addi sp, sp, -4
     sw ra, 0(sp)
+
+    la t0, inimigos_mortos
+    lw zero, 0(t0)
 
     la t0, mago_spawn_x
     lw t1, 0(t0)

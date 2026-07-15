@@ -6,7 +6,9 @@ musica_menu_tam:       .word 8
 
 .eqv INSTRUMENTO_8BIT    80    # Lead 1 (square) - musica do menu
 .eqv INSTRUMENTO_IMPACTO 116   # Taiko Drum - disparo (parecido com hit.mp3)
-.eqv INSTRUMENTO_GOBLIN  30    # Overdriven Guitar - sons do goblin
+.eqv INSTRUMENTO_GOBLIN  38    # Synth Bass 1 - grunhido grave da morte do ogro
+.eqv INSTRUMENTO_MORTE_MAGO 38 # Synth Bass 1 - queda grave do mago
+.eqv INSTRUMENTO_OLHO    103   # FX 8 (sci-fi) - ataque do olho voador
 .eqv VELOCIDADE_NOTA     100
 .eqv TECLA_AUDIO         0xff200004
 
@@ -91,36 +93,101 @@ tocar_som_goblin_ataca:
     ret
 
 # Som do ogro morrendo (parecido com goblin_morrendo.mp3: grito agudo caindo).
+# Assincrono: morte de inimigo acontece com frequencia (ex: ogro na lava),
+# um som sincrono aqui travaria o jogo a cada morte.
 tocar_som_goblin_morre:
-    li a0, 79
-    li a1, 130
+    li a0, 48
+    li a1, 110
     li a2, INSTRUMENTO_GOBLIN
+    li a3, 105
+    li a7, 31
+    ecall
+
+    li a0, 40
+    li a1, 250
+    li a2, INSTRUMENTO_GOBLIN
+    li a3, 95
+    li a7, 31
+    ecall
+    ret
+
+# Som da morte do mago: queda grave, distinta do dano comum.
+tocar_som_mago_morre:
+    li a0, 52
+    li a1, 140
+    li a2, INSTRUMENTO_MORTE_MAGO
     li a3, 110
     li a7, 33
     ecall
 
+    li a0, 40
+    li a1, 360
+    li a2, INSTRUMENTO_MORTE_MAGO
+    li a3, 100
+    li a7, 33
+    ecall
+    ret
+
+# Som de ataque do olho voador: rajada aguda e curta, meio "sobrenatural".
+# Sincrono, igual aos outros ataques (reforça o impacto do hit).
+tocar_som_olho_ataca:
     li a0, 74
-    li a1, 130
-    li a2, INSTRUMENTO_GOBLIN
-    li a3, 100
+    li a1, 90
+    li a2, INSTRUMENTO_OLHO
+    li a3, 105
     li a7, 33
     ecall
 
-    li a0, 1000
-    li a7, 32
-    ecall
-
-    li a0, 69
-    li a1, 130
-    li a2, INSTRUMENTO_GOBLIN
-    li a3, 100
+    li a0, 79
+    li a1, 90
+    li a2, INSTRUMENTO_OLHO
+    li a3, 110
     li a7, 33
     ecall
 
-    li a0, 64
-    li a1, 250
-    li a2, INSTRUMENTO_GOBLIN
+    li a0, 86
+    li a1, 150
+    li a2, INSTRUMENTO_OLHO
+    li a3, 115
+    li a7, 33
+    ecall
+    ret
+
+# Variante assincrona: preserva o efeito sem parar o loop do jogo.
+tocar_som_olho_ataca_async:
+    li a0, 74
+    li a1, 90
+    li a2, INSTRUMENTO_OLHO
+    li a3, 105
+    li a7, 31
+    ecall
+    li a0, 79
+    li a1, 90
+    li a2, INSTRUMENTO_OLHO
+    li a3, 110
+    li a7, 31
+    ecall
+    li a0, 86
+    li a1, 150
+    li a2, INSTRUMENTO_OLHO
+    li a3, 115
+    li a7, 31
+    ecall
+    ret
+
+# Som de morte do olho voador: queda curta e aguda.
+# Assincrono pelo mesmo motivo do goblin: pode morrer com frequencia.
+tocar_som_olho_morre:
+    li a0, 82
+    li a1, 90
+    li a2, INSTRUMENTO_OLHO
+    li a3, 105
+    li a7, 31
+    ecall
+    li a0, 58
+    li a1, 240
+    li a2, INSTRUMENTO_OLHO
     li a3, 90
-    li a7, 33
+    li a7, 31
     ecall
     ret

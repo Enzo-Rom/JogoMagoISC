@@ -31,6 +31,7 @@ tempo_final:     .word 0 # s3
 map_adress:      .word 0 # endereco do mapa atual
 nivel_atual:     .word 0
 mago_disparou:   .word 0
+pular_menu:      .word 0  # 1 = ao entrar em init_mago, nao mostra o menu (usado por next_level)
 
 # a =0, s = 1, ap =2, d = 3, dp = 4,
 
@@ -59,10 +60,10 @@ init_mago:
     li t1, 65
     sw t1, 0(t0)
     la t0, posicao_x_mago
-    li t1, 24
+    li t1, 145
     sw t1, 0(t0)
     la t0, posicao_y_mago
-    li t1, 20
+    li t1, 180
     sw t1, 0(t0)
 
     la t0, inimigos_mortos
@@ -102,11 +103,21 @@ init_disparos_fim:
 
     jal init_poderes_vetores
 
+    la t0, pular_menu
+    lw t1, 0(t0)
+    bnez t1, pula_intro_menu   # veio de next_level: nao mostra o menu de novo
+
     jal draw_menu
     jal tocar_musica_menu  # toca em loop ate ESPACO ser pressionado
 
     li t0, TECLA           # consome o ESPACO do menu (evita disparo fantasma)
     sw zero, 0(t0)
+    j intro_menu_fim
+
+pula_intro_menu:
+    la t0, pular_menu
+    sw zero, 0(t0)         # consome a flag
+intro_menu_fim:
 
     jal spawn_inimigos
 
@@ -163,11 +174,17 @@ shoot:
     jal tocar_som_disparo
     j after_move
 shoot_triplo:
+    li t1, 10
+    la t0, mago_disparou   
+    sw t1, 0(t0)
     jal spawn_tiro_triplo
     jal tocar_som_disparo
     j after_move
 
 super_shoot:
+    li t1, 30
+    la t0, mago_disparou   
+    sw t1, 0(t0)
     jal spawn_superdisparo
     beqz a0, after_move     # nao tinha mana cheia: nao disparou, sem som
     jal tocar_som_disparo
@@ -211,6 +228,10 @@ next_level:
 
     li t0, 3
     beq t0, t1, venceu
+
+    la t0, pular_menu       # avanco de fase: nao mostra o menu inicial de novo
+    li t1, 1
+    sw t1, 0(t0)
 
     j init_mago
 
@@ -548,6 +569,13 @@ tela_game_over:
 
     li t0, TECLA               # limpa tecla residual
     sw zero, 0(t0)
+
+    la t0, nivel_atual
+    sw zero, 0(t0)
+
+    la t0, map_pixels
+    la t1, map_adress
+    sw t0, 0(t1)
 
 go_espera:
     jal read_key

@@ -1,9 +1,10 @@
 .data
 .eqv MAX_INIMIGOS   8
-.eqv TAM_INIMIGO    20   # bytes por inimigo (x, y, ativo, direcao, timer)
+.eqv TAM_INIMIGO    24   # bytes por inimigo (x, y, ativo, direcao, timer, tipo)
 .eqv TAM_PX_INIMIGO 32   # largura/altura do inimigo em pixels
+.eqv TIPO_OLHO_COLISAO 2
 
-inimigos: .space 160     # MAX_INIMIGOS * TAM_INIMIGO
+inimigos: .space 192     # MAX_INIMIGOS * TAM_INIMIGO
 
 .text
 
@@ -69,7 +70,13 @@ colisao_loop:
     jal check_collision
     beqz a0, colisao_next
 
+    lw t0, 20(s4)
+    li t1, TIPO_OLHO_COLISAO
+    beq t0, t1, colisao_olho
     jal mago_atingido
+    j colisao_fim
+colisao_olho:
+    jal mago_atingido_olho
     j colisao_fim
 
 colisao_next:
@@ -175,8 +182,14 @@ colidiu:
     jal mago_atingido
 
 map_colision_inimigo1:
+    j fim_after_move             # lava de inimigos agora e tratada no passo do ogro
     la   s3, inimigos
     li   s4, MAX_INIMIGOS
+    lw   t2, 8(s3)              # slot ativo?
+    beqz t2, fim_colision
+    lw   t2, 20(s3)             # olhos voadores ignoram toda lava
+    li   t3, 2
+    beq  t2, t3, fim_colision
     
     la t0, nivel_atual
     lw t1, 0(t0)
@@ -252,6 +265,9 @@ map_colision_inimigo2:
     j fim_colision
 
 colidiuI:
+    lw t0, 20(s3)              # somente ogros morrem ao tocar lava
+    li t1, 2                    # tipo 2 = olho voador
+    beq t0, t1, fim_colision
     mv a0, s3
     jal mata_inimigo
 
