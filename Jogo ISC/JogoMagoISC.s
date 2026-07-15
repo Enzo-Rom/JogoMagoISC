@@ -59,11 +59,13 @@ init_mago:
     la t0, mana_atual
     li t1, 65
     sw t1, 0(t0)
-    la t0, posicao_x_mago
-    li t1, 145
+    la t0, mago_spawn_x 
+    lw t1, 0(t0)
+    la t0,  posicao_x_mago
     sw t1, 0(t0)
-    la t0, posicao_y_mago
-    li t1, 180
+    la t0, mago_spawn_y
+    lw t1, 0(t0)
+    la t0,  posicao_y_mago
     sw t1, 0(t0)
 
     la t0, inimigos_mortos

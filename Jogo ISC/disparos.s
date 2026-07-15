@@ -139,8 +139,11 @@ atualiza_disp_col:
     # objeto 2 = inimigo (32x32)
     lw   a4, 0(s3)
     lw   a5, 4(s3)
-    li   a6, TAM_PX_INIMIGO
-    li   a7, TAM_PX_INIMIGO
+    #Ajustes de hitbox arbitrarios
+    addi a4, a4, 10 
+    addi a5, a5, 5
+    li   a6, 10
+    li   a7, 20
 
     jal  check_collision
     beqz a0, atualiza_disp_col_next

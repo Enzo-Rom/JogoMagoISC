@@ -423,6 +423,12 @@ draw_inimigos_loop:
 draw_olho:
     la a0, eyeofrah
     addi a0, a0, 8
+    lw t0, 12(s1)
+    li t1, 1024
+    mul t0, t0, t1
+    add a0, a0, t0
+
+draw_olho1:
     jal draw_sprite32
 draw_inimigos_prox:
     addi s1, s1, TAM_INIMIGO

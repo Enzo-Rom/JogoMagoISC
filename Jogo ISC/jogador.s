@@ -34,8 +34,8 @@ hud_mana_x:       .word 4
 hud_mana_y:       .word 14
 hud_mana_largura: .word 26
 
-mago_spawn_x:     .word 24
-mago_spawn_y:     .word 20
+mago_spawn_x:     .word 145
+mago_spawn_y:     .word 180
 
 .text
 
@@ -275,6 +275,11 @@ matar_loop:
     j matar_loop
 matar_fim:
     jal spawn_inimigos
+
+    mv s7, ra
+    li a0, 2000
+    jal sleep_ms
+    mv ra, s7
 
     lw ra, 0(sp)
     addi sp, sp, 4

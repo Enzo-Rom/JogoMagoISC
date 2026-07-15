@@ -57,6 +57,12 @@ colisao_loop:
     lw t1, 4(s4)
     lw t2, 8(s4)
     beqz t2, colisao_next
+    
+    #Ajustes de hitbox arbitrarios
+    addi t0, t0, 10 
+    addi t1, t1, 5
+    li   a6, 10
+    li   a7, 20
 
     mv a0, s1
     mv a1, s2
@@ -64,8 +70,6 @@ colisao_loop:
     mv a3, s3
     mv a4, t0
     mv a5, t1
-    mv a6, s7
-    mv a7, s7
 
     jal check_collision
     beqz a0, colisao_next
